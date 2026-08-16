@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="多國語言隨身電子病歷 Personal Medical Passport">
+<title>Personal Medical Passport｜隨身電子病歷</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#182230;--muted:#64748b;--primary:#1769aa;--primary2:#0e4f82;--border:#dce4ee;--danger:#b42318;--ok:#087443;--shadow:0 10px 30px rgba(20,40,70,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Noto Sans",Arial,sans-serif;line-height:1.55}
+header{background:linear-gradient(135deg,#0e4f82,#1b78b8);color:#fff;padding:28px 20px;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px #0002}
+.header-inner{max-width:1180px;margin:auto;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(24px,4vw,36px)}.subtitle{opacity:.9;margin:5px 0 0}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.controls select,.controls button{border:1px solid #ffffff55;background:#ffffff18;color:#fff;border-radius:10px;padding:9px 12px;font:inherit}.controls option{color:#111;background:#fff}.controls button{cursor:pointer}
+main{max-width:1180px;margin:26px auto;padding:0 18px}.notice{background:#fff8e6;border:1px solid #f2d48a;padding:13px 16px;border-radius:12px;margin-bottom:20px;color:#6b4b00}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:8px;margin-bottom:14px}.tab{border:1px solid var(--border);background:#fff;border-radius:999px;padding:9px 15px;cursor:pointer;white-space:nowrap;color:var(--text)}.tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}.card h2,.card h3{margin:0 0 14px}.full{grid-column:1/-1}
+label{display:block;font-weight:650;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px 11px;background:#fff;color:var(--text);font:inherit}textarea{min-height:90px;resize:vertical}.field{margin-bottom:13px}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.repeat{border:1px dashed #b9c7d8;border-radius:12px;padding:14px;margin-bottom:10px;position:relative}.remove{position:absolute;right:10px;top:10px;border:0;background:#fee4e2;color:var(--danger);border-radius:7px;padding:5px 8px;cursor:pointer}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.btn{border:0;border-radius:9px;padding:10px 15px;cursor:pointer;font:inherit;font-weight:650;background:var(--primary);color:#fff}.btn.secondary{background:#e8eef5;color:#1f3449}.btn.danger{background:#fff0ef;color:var(--danger);border:1px solid #f5c3bf}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:13px}.stat b{display:block;font-size:22px}.small{font-size:13px;color:var(--muted)}
+footer{max-width:1180px;margin:30px auto;padding:0 18px 30px;color:var(--muted);font-size:13px}
+@media(max-width:800px){.grid,.row,.row3{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}header{position:static}}
+@media print{header,.tabs,.actions,.notice,footer{display:none!important}body{background:#fff}.panel{display:block!important}.card{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+<div class="header-inner">
+<div><h1 data-i18n="title">隨身電子病歷</h1><div class="subtitle" data-i18n="subtitle">Personal Medical Passport</div></div>
+<div class="controls">
+<select id="language" aria-label="Language">
+<option value="zh-TW">繁體中文</option><option value="en">English</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="vi">Tiếng Việt</option>
+</select>
+<button onclick="window.print()" data-i18n="print">列印 / PDF</button>
+</div>
+</div>
+</header>
+
+<main>
+<div class="notice"><strong data-i18n="privacyTitle">隱私提醒：</strong><span data-i18n="privacy">資料只儲存在本裝置的瀏覽器 localStorage，不會自動上傳。若裝置遺失，資料可能被他人取得；請依需要加密、備份或清除。</span></div>
+<div class="summary">
+<div class="stat"><span class="small" data-i18n="status">完成狀態</span><b id="completion">0%</b></div>
+<div class="stat"><span class="small" data-i18n="allergyCount">過敏紀錄</span><b id="allergyCount">0</b></div>
+<div class="stat"><span class="small" data-i18n="medCount">用藥紀錄</span><b id="medCount">0</b></div>
+<div class="stat"><span class="small" data-i18n="contactCount">緊急聯絡人</span><b id="contactCount">0</b></div>
+</div>
+
+<nav class="tabs">
+<button class="tab active" data-panel="personal" data-i18n="tabPersonal">個人資料</button>
+<button class="tab" data-panel="history" data-i18n="tabHistory">疾病與家族史</button>
+<button class="tab" data-panel="procedures" data-i18n="tabProcedures">手術與住院</button>
+<button class="tab" data-panel="medications" data-i18n="tabMeds">用藥與過敏</button>
+<button class="tab" data-panel="vaccines" data-i18n="tabVaccines">疫苗與檢查</button>
+<button class="tab" data-panel="contacts" data-i18n="tabContacts">緊急聯絡</button>
+<button class="tab" data-panel="documents" data-i18n="tabDocuments">醫療文件</button>
+</nav>
+
+<section id="personal" class="panel active">
+<div class="grid">
+<div class="card">
+<h2 data-i18n="personalTitle">個人基本資料</h2>
+<div class="row"><div class="field"><label data-i18n="name">姓名</label><input data-save="name"></div><div class="field"><label data-i18n="dob">出生日期</label><input type="date" data-save="dob"></div></div>
+<div class="row"><div class="field"><label data-i18n="sex">出生性別</label><select data-save="sex"><option></option><option data-i18n="female">女性</option><option data-i18n="male">男性</option><option data-i18n="other">其他 / 不願透露</option></select></div><div class="field"><label data-i18n="blood">血型</label><select data-save="blood"><option></option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option><option data-i18n="unknown">未知</option></select></div></div>
+<div class="row"><div class="field"><label data-i18n="nationality">國籍 / 居住地</label><input data-save="nationality"></div><div class="field"><label data-i18n="id">護照 / 身分識別資訊（可選）</label><input data-save="id"></div></div>
+<div class="field"><label data-i18n="heightWeight">身高 / 體重</label><input data-save="heightWeight" placeholder="例如：170 cm / 65 kg"></div>
+<div class="field"><label data-i18n="notes">重要備註</label><textarea data-save="personalNotes"></textarea></div>
+</div>
+<div class="card">
+<h2 data-i18n="preferences">醫療偏好與溝通</h2>
+<div class="field"><label data-i18n="languagePref">主要溝通語言</label><input data-save="languagePref"></div>
+<div class="field"><label data-i18n="interpreter">是否需要口譯 / 手語 / 特殊協助</label><textarea data-save="interpreter"></textarea></div>
+<div class="field"><label data-i18n="religious">醫療照護偏好 / 特殊要求</label><textarea data-save="carePreference"></textarea></div>
+<div class="field"><label data-i18n="advance">預立醫療照護相關資訊（如適用）</label><textarea data-save="advance"></textarea></div>
+</div>
+</div>
+</section>
+
+<section id="history" class="panel">
+<div class="grid">
+<div class="card"><h2 data-i18n="conditions">目前 / 過去疾病史</h2><div id="conditions"></div><button class="btn secondary" onclick="addItem('conditions',conditionTemplate)" data-i18n="add">＋ 新增</button></div>
+<div class="card"><h2 data-i18n="family">家族病史</h2><div id="family"></div><button class="btn secondary" onclick="addItem('family',familyTemplate)" data-i18n="add">＋ 新增</button></div>
+<div class="card full"><h2 data-i18n="lifestyle">生活型態與其他重要資訊</h2>
+<div class="row"><div class="field"><label data-i18n="smoking">吸菸 / 電子菸</label><textarea data-save="smoking"></textarea></div><div class="field"><label data-i18n="alcohol">酒精 / 其他物質使用</label><textarea data-save="alcohol"></textarea></div></div>
+<div class="row"><div class="field"><label data-i18n="diet">飲食 / 特殊飲食</label><textarea data-save="diet"></textarea></div><div class="field"><label data-i18n="occupation">職業 / 工作暴露</label><textarea data-save="occupation"></textarea></div></div>
+</div>
+</div>
+</section>
+
+<section id="procedures" class="panel">
+<div class="card"><h2 data-i18n="surgery">手術 / 侵入性處置 / 住院史</h2><div id="proceduresList"></div><button class="btn secondary" onclick="addItem('proceduresList',procedureTemplate)" data-i18n="add">＋ 新增</button></div>
+</section>
+
+<section id="medications" class="panel">
+<div class="grid">
+<div class="card"><h2 data-i18n="medications">目前與近期用藥</h2><div id="medicationsList"></div><button class="btn secondary" onclick="addItem('medicationsList',medTemplate)" data-i18n="add">＋ 新增</button></div>
+<div class="card"><h2 data-i18n="allergies">藥物 / 食物 / 其他過敏</h2><div id="allergiesList"></div><button class="btn secondary" onclick="addItem('allergiesList',allergyTemplate)" data-i18n="add">＋ 新增</button></div>
+</div>
+</section>
+
+<section id="vaccines" class="panel">
+<div class="grid">
+<div class="card"><h2 data-i18n="vaccines">疫苗紀錄</h2><div id="vaccinesList"></div><button class="btn secondary" onclick="addItem('vaccinesList',vaccineTemplate)" data-i18n="add">＋ 新增</button></div>
+<div class="card"><h2 data-i18n="tests">重要檢查 / 檢驗</h2><div id="testsList"></div><button class="btn secondary" onclick="addItem('testsList',testTemplate)" data-i18n="add">＋ 新增</button></div>
+</div>
+</section>
+
+<section id="contacts" class="panel">
+<div class="grid">
+<div class="card"><h2 data-i18n="emergency">緊急聯絡人</h2><div id="contactsList"></div><button class="btn secondary" onclick="addItem('contactsList',contactTemplate)" data-i18n="add">＋ 新增</button></div>
+<div class="card"><h2 data-i18n="providers">主要醫療團隊</h2><div id="providersList"></div><button class="btn secondary" onclick="addItem('providersList',providerTemplate)" data-i18n="add">＋ 新增</button></div>
+</div>
+</section>
+
+<section id="documents" class="panel">
+<div class="card">
+<h2 data-i18n="documents">醫療文件索引</h2>
+<p class="small" data-i18n="docHint">靜態網站不適合直接保存大量醫療檔案；這裡先記錄文件名稱、日期與位置。若要真正上傳檔案，可再擴充後端或安全雲端儲存。</p>
+<div id="documentsList"></div><button class="btn secondary" onclick="addItem('documentsList',documentTemplate)" data-i18n="add">＋ 新增</button>
+</div>
+</section>
+
+<div class="actions">
+<button class="btn" onclick="saveAll()" data-i18n="save">儲存到本機</button>
+<button class="btn secondary" onclick="exportJSON()" data-i18n="export">匯出資料 JSON</button>
+<label class="btn secondary" style="display:inline-block;cursor:pointer"><span data-i18n="import">匯入 JSON</span><input id="importFile" type="file" accept=".json,application/json" style="display:none"></label>
+<button class="btn danger" onclick="clearAll()" data-i18n="clear">清除全部資料</button>
+</div>
+</main>
+<footer><span data-i18n="footer">本工具是個人資料整理介面，不是醫療診斷、處方或緊急醫療系統。緊急狀況請依所在地的緊急醫療流程求助。</span></footer>
+
+<script>
+const KEY="medicalPassport_v1";
+const translations={
+"zh-TW":{title:"隨身電子病歷",subtitle:"Personal Medical Passport",print:"列印 / PDF",privacyTitle:"隱私提醒：",privacy:"資料只儲存在本裝置的瀏覽器 localStorage，不會自動上傳。若裝置遺失，資料可能被他人取得；請依需要加密、備份或清除。",status:"完成狀態",allergyCount:"過敏紀錄",medCount:"用藥紀錄",contactCount:"緊急聯絡人",tabPersonal:"個人資料",tabHistory:"疾病與家族史",tabProcedures:"手術與住院",tabMeds:"用藥與過敏",tabVaccines:"疫苗與檢查",tabContacts:"緊急聯絡",tabDocuments:"醫療文件",personalTitle:"個人基本資料",name:"姓名",dob:"出生日期",sex:"出生性別",female:"女性",male:"男性",other:"其他 / 不願透露",blood:"血型",unknown:"未知",nationality:"國籍 / 居住地",id:"護照 / 身分識別資訊（可選）",heightWeight:"身高 / 體重",notes:"重要備註",preferences:"醫療偏好與溝通",languagePref:"主要溝通語言",interpreter:"是否需要口譯 / 手語 / 特殊協助",religious:"醫療照護偏好 / 特殊要求",advance:"預立醫療照護相關資訊（如適用）",conditions:"目前 / 過去疾病史",family:"家族病史",lifestyle:"生活型態與其他重要資訊",smoking:"吸菸 / 電子菸",alcohol:"酒精 / 其他物質使用",diet:"飲食 / 特殊飲食",occupation:"職業 / 工作暴露",surgery:"手術 / 侵入性處置 / 住院史",medications:"目前與近期用藥",allergies:"藥物 / 食物 / 其他過敏",vaccines:"疫苗紀錄",tests:"重要檢查 / 檢驗",emergency:"緊急聯絡人",providers:"主要醫療團隊",documents:"醫療文件索引",docHint:"靜態網站不適合直接保存大量醫療檔案；這裡先記錄文件名稱、日期與位置。若要真正上傳檔案，可再擴充後端或安全雲端儲存。",add:"＋ 新增",save:"儲存到本機",export:"匯出資料 JSON",import:"匯入 JSON",clear:"清除全部資料",footer:"本工具是個人資料整理介面，不是醫療診斷、處方或緊急醫療系統。緊急狀況請依所在地的緊急醫療流程求助。",saved:"已儲存。",cleared:"已清除。"},
+"en":{title:"Personal Medical Passport",subtitle:"Portable Personal Medical Record",print:"Print / PDF",privacyTitle:"Privacy: ",privacy:"Data stays in this browser's local storage and is not uploaded automatically. Protect, back up, or delete it as appropriate.",status:"Completion",allergyCount:"Allergies",medCount:"Medications",contactCount:"Emergency contacts",tabPersonal:"Personal",tabHistory:"Medical & Family History",tabProcedures:"Surgeries & Hospitalizations",tabMeds:"Medications & Allergies",tabVaccines:"Vaccines & Tests",tabContacts:"Emergency",tabDocuments:"Documents",personalTitle:"Personal Details",name:"Name",dob:"Date of birth",sex:"Sex at birth",female:"Female",male:"Male",other:"Other / Prefer not to say",blood:"Blood type",unknown:"Unknown",nationality:"Nationality / Residence",id:"Passport / ID (optional)",heightWeight:"Height / Weight",notes:"Important notes",preferences:"Care Preferences & Communication",languagePref:"Preferred language",interpreter:"Interpreter / sign-language / accessibility needs",religious:"Care preferences / special requirements",advance:"Advance care planning information (if applicable)",conditions:"Current / Past Conditions",family:"Family History",lifestyle:"Lifestyle & Other Information",smoking:"Smoking / vaping",alcohol:"Alcohol / other substance use",diet:"Diet / special diet",occupation:"Occupation / exposure",surgery:"Surgeries / Procedures / Hospitalizations",medications:"Current & Recent Medications",allergies:"Medication / Food / Other Allergies",vaccines:"Vaccination Records",tests:"Important Tests / Results",emergency:"Emergency Contacts",providers:"Healthcare Providers",documents:"Medical Document Index",docHint:"For a static site, avoid storing large medical files directly. Record document names, dates and locations here; secure cloud/backend storage can be added later.",add:"＋ Add",save:"Save locally",export:"Export JSON",import:"Import JSON",clear:"Clear all",footer:"This is a personal record organizer, not a diagnostic, prescribing, or emergency medical system. Follow local emergency procedures when needed.",saved:"Saved.",cleared:"Cleared."},
+"ko":{title:"휴대용 전자 의료기록",subtitle:"Personal Medical Passport",print:"인쇄 / PDF",privacyTitle:"개인정보: ",privacy:"자료는 이 브라우저의 로컬 저장소에만 저장되며 자동 업로드되지 않습니다.",status:"완성도",allergyCount:"알레르기",medCount:"복용약",contactCount:"비상 연락처",tabPersonal:"개인정보",tabHistory:"질병·가족력",tabProcedures:"수술·입원",tabMeds:"약물·알레르기",tabVaccines:"예방접종·검사",tabContacts:"비상 연락",tabDocuments:"의료 문서",personalTitle:"개인 기본 정보",name:"이름",dob:"생년월일",sex:"출생 성별",female:"여성",male:"남성",other:"기타 / 공개하지 않음",blood:"혈액형",unknown:"모름",nationality:"국적 / 거주지",id:"여권 / 신분정보(선택)",heightWeight:"키 / 체중",notes:"중요 메모",preferences:"의료 선호 및 의사소통",languagePref:"주 사용 언어",interpreter:"통역 / 수어 / 접근성 지원 필요",religious:"진료 선호 / 특별 요구사항",advance:"사전연명의료계획 관련 정보(해당 시)",conditions:"현재 / 과거 질환",family:"가족력",lifestyle:"생활습관 및 기타 정보",smoking:"흡연 / 전자담배",alcohol:"음주 / 기타 물질 사용",diet:"식습관 / 특별식",occupation:"직업 / 노출",surgery:"수술 / 시술 / 입원력",medications:"현재 및 최근 복용약",allergies:"약물 / 음식 / 기타 알레르기",vaccines:"예방접종 기록",tests:"중요 검사 / 결과",emergency:"비상 연락처",providers:"주요 의료진",documents:"의료 문서 색인",docHint:"정적 사이트에서는 대용량 의료 파일을 직접 저장하지 않는 것이 좋습니다. 문서명·날짜·위치를 기록하고 필요하면 보안 서버/클라우드를 추가하세요.",add:"＋ 추가",save:"로컬 저장",export:"JSON 내보내기",import:"JSON 가져오기",clear:"전체 삭제",footer:"이 도구는 개인 의료기록 정리용이며 진단·처방·응급의료 시스템이 아닙니다.",saved:"저장했습니다.",cleared:"삭제했습니다."},
+"ja":{title:"携帯用電子カルテ",subtitle:"Personal Medical Passport",print:"印刷 / PDF",privacyTitle:"プライバシー：",privacy:"データはこのブラウザのローカルストレージに保存され、自動アップロードされません。必要に応じて保護・バックアップ・削除してください。",status:"完成度",allergyCount:"アレルギー",medCount:"服薬",contactCount:"緊急連絡先",tabPersonal:"個人情報",tabHistory:"病歴・家族歴",tabProcedures:"手術・入院",tabMeds:"薬・アレルギー",tabVaccines:"予防接種・検査",tabContacts:"緊急連絡",tabDocuments:"医療書類",personalTitle:"基本情報",name:"氏名",dob:"生年月日",sex:"出生時の性別",female:"女性",male:"男性",other:"その他 / 回答しない",blood:"血液型",unknown:"不明",nationality:"国籍 / 居住地",id:"パスポート / ID（任意）",heightWeight:"身長 / 体重",notes:"重要メモ",preferences:"医療上の希望・コミュニケーション",languagePref:"主な言語",interpreter:"通訳 / 手話 / 支援の必要性",religious:"治療上の希望 / 特別な要件",advance:"ACP等の情報（該当する場合）",conditions:"現在 / 過去の病気",family:"家族歴",lifestyle:"生活習慣・その他",smoking:"喫煙 / 電子タバコ",alcohol:"飲酒 / その他の物質使用",diet:"食事 / 特別食",occupation:"職業 / 曝露",surgery:"手術 / 処置 / 入院歴",medications:"現在・最近の服薬",allergies:"薬剤 / 食物 / その他のアレルギー",vaccines:"予防接種記録",tests:"重要な検査 / 結果",emergency:"緊急連絡先",providers:"主な医療機関・医療者",documents:"医療書類一覧",docHint:"静的サイトでは大量の医療ファイルを直接保存しないでください。書類名・日付・場所を記録し、必要なら安全なサーバー/クラウドを追加してください。",add:"＋ 追加",save:"ローカル保存",export:"JSON書き出し",import:"JSON読み込み",clear:"すべて削除",footer:"これは個人医療記録の整理ツールであり、診断・処方・救急医療システムではありません。",saved:"保存しました。",cleared:"削除しました。"},
+"vi":{title:"Hồ sơ y tế cá nhân mang theo",subtitle:"Personal Medical Passport",print:"In / PDF",privacyTitle:"Quyền riêng tư: ",privacy:"Dữ liệu chỉ được lưu trong bộ nhớ cục bộ của trình duyệt và không tự động tải lên.",status:"Mức hoàn thành",allergyCount:"Dị ứng",medCount:"Thuốc",contactCount:"Liên hệ khẩn cấp",tabPersonal:"Cá nhân",tabHistory:"Bệnh sử & Gia đình",tabProcedures:"Phẫu thuật & Nhập viện",tabMeds:"Thuốc & Dị ứng",tabVaccines:"Vắc-xin & Xét nghiệm",tabContacts:"Khẩn cấp",tabDocuments:"Tài liệu",personalTitle:"Thông tin cá nhân",name:"Họ tên",dob:"Ngày sinh",sex:"Giới tính khi sinh",female:"Nữ",male:"Nam",other:"Khác / Không muốn nêu",blood:"Nhóm máu",unknown:"Chưa biết",nationality:"Quốc tịch / Nơi cư trú",id:"Hộ chiếu / ID (tùy chọn)",heightWeight:"Chiều cao / Cân nặng",notes:"Ghi chú quan trọng",preferences:"Ưu tiên chăm sóc & giao tiếp",languagePref:"Ngôn ngữ chính",interpreter:"Nhu cầu phiên dịch / ngôn ngữ ký hiệu / hỗ trợ",religious:"Ưu tiên điều trị / yêu cầu đặc biệt",advance:"Thông tin kế hoạch chăm sóc trước (nếu có)",conditions:"Bệnh hiện tại / trước đây",family:"Tiền sử gia đình",lifestyle:"Lối sống & thông tin khác",smoking:"Hút thuốc / thuốc lá điện tử",alcohol:"Rượu / chất khác",diet:"Chế độ ăn / ăn kiêng",occupation:"Nghề nghiệp / phơi nhiễm",surgery:"Phẫu thuật / thủ thuật / nhập viện",medications:"Thuốc đang và gần đây sử dụng",allergies:"Dị ứng thuốc / thức ăn / khác",vaccines:"Tiêm chủng",tests:"Xét nghiệm / kết quả quan trọng",emergency:"Liên hệ khẩn cấp",providers:"Nhân viên / cơ sở y tế chính",documents:"Danh mục tài liệu y tế",docHint:"Với trang tĩnh, không nên lưu trực tiếp các tệp y tế lớn. Hãy ghi tên, ngày và vị trí tài liệu; có thể bổ sung máy chủ/đám mây an toàn sau.",add:"＋ Thêm",save:"Lưu cục bộ",export:"Xuất JSON",import:"Nhập JSON",clear:"Xóa tất cả",footer:"Đây là công cụ sắp xếp hồ sơ cá nhân, không phải hệ thống chẩn đoán, kê đơn hay cấp cứu.",saved:"Đã lưu.",cleared:"Đã xóa."}
+};
+let lang="zh-TW";
+const t=()=>translations[lang]||translations["zh-TW"];
+function applyLang(){document.documentElement.lang=lang;document.querySelectorAll("[data-i18n]").forEach(e=>{let k=e.dataset.i18n;if(t()[k])e.textContent=t()[k]});document.querySelectorAll("[data-i18n-placeholder]").forEach(e=>{e.placeholder=t()[e.dataset.i18nPlaceholder]||""});}
+document.getElementById("language").onchange=e=>{lang=e.target.value;localStorage.setItem(KEY+"_lang",lang);applyLang();};
+
+const templates={
+conditionTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>疾病 / 診斷</label><input data-item="condition"></div><div class="field"><label>診斷日期</label><input type="date" data-item="date"></div></div><div class="field"><label>目前狀態 / 備註</label><textarea data-item="notes"></textarea></div></div>`,
+familyTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>親屬</label><input data-item="relative" placeholder="例如：父親"></div><div class="field"><label>疾病</label><input data-item="condition"></div></div><div class="field"><label>備註 / 發病年齡</label><input data-item="notes"></div></div>`,
+procedureTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row3"><div class="field"><label>手術 / 處置</label><input data-item="procedure"></div><div class="field"><label>日期</label><input type="date" data-item="date"></div><div class="field"><label>醫院 / 地點</label><input data-item="place"></div></div><div class="field"><label>結果 / 備註</label><textarea data-item="notes"></textarea></div></div>`,
+medTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row3"><div class="field"><label>藥品名稱</label><input data-item="name"></div><div class="field"><label>劑量</label><input data-item="dose"></div><div class="field"><label>頻率</label><input data-item="frequency"></div></div><div class="row"><div class="field"><label>用途</label><input data-item="reason"></div><div class="field"><label>開始 / 停止日期</label><input data-item="dates"></div></div></div>`,
+allergyTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>過敏原</label><input data-item="allergen"></div><div class="field"><label>反應</label><input data-item="reaction"></div></div><div class="field"><label>嚴重程度 / 備註</label><input data-item="severity"></div></div>`,
+vaccineTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row3"><div class="field"><label>疫苗</label><input data-item="name"></div><div class="field"><label>日期</label><input type="date" data-item="date"></div><div class="field"><label>劑次</label><input data-item="dose"></div></div></div>`,
+testTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>檢查 / 檢驗</label><input data-item="name"></div><div class="field"><label>日期</label><input type="date" data-item="date"></div></div><div class="field"><label>結果 / 單位 / 備註</label><textarea data-item="result"></textarea></div></div>`,
+contactTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>姓名</label><input data-item="name"></div><div class="field"><label>關係</label><input data-item="relation"></div></div><div class="row"><div class="field"><label>電話</label><input data-item="phone"></div><div class="field"><label>其他聯絡方式</label><input data-item="other"></div></div></div>`,
+providerTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row"><div class="field"><label>醫療人員 / 科別</label><input data-item="name"></div><div class="field"><label>醫院 / 診所</label><input data-item="place"></div></div><div class="row"><div class="field"><label>電話</label><input data-item="phone"></div><div class="field"><label>備註</label><input data-item="notes"></div></div></div>`,
+documentTemplate:()=>`<div class="repeat"><button class="remove" onclick="this.parentElement.remove();updateStats()">×</button><div class="row3"><div class="field"><label>文件名稱</label><input data-item="name"></div><div class="field"><label>日期</label><input type="date" data-item="date"></div><div class="field"><label>位置 / 檔名</label><input data-item="location"></div></div></div>`
+};
+Object.assign(window,templates);
+function addItem(id,fn){document.getElementById(id).insertAdjacentHTML("beforeend",fn());updateStats();}
+function collectRepeats(id){return [...document.querySelectorAll(`#${id} .repeat`)].map(x=>Object.fromEntries([...x.querySelectorAll("[data-item]")].map(i=>[i.dataset.item,i.value])));}
+const repeatIds=["conditions","family","proceduresList","medicationsList","allergiesList","vaccinesList","testsList","contactsList","providersList","documentsList"];
+function collect(){let data={};document.querySelectorAll("[data-save]").forEach(e=>data[e.dataset.save]=e.value);repeatIds.forEach(id=>data[id]=collectRepeats(id));return data;}
+function saveAll(){localStorage.setItem(KEY,JSON.stringify(collect()));updateStats();alert(t().saved);}
+function fill(data){document.querySelectorAll("[data-save]").forEach(e=>e.value=data[e.dataset.save]||"");repeatIds.forEach(id=>{let el=document.getElementById(id);el.innerHTML="";(data[id]||[]).forEach(item=>{let fn={conditions:conditionTemplate,family:familyTemplate,proceduresList:procedureTemplate,medicationsList:medTemplate,allergiesList:allergyTemplate,vaccinesList:vaccineTemplate,testsList:testTemplate,contactsList:contactTemplate,providersList:providerTemplate,documentsList:documentTemplate}[id];el.insertAdjacentHTML("beforeend",fn());let box=el.lastElementChild;Object.entries(item).forEach(([k,v])=>{let inp=box.querySelector(`[data-item="${CSS.escape(k)}"]`);if(inp)inp.value=v||""})})});updateStats();}
+function updateStats(){let data=collect(),total=document.querySelectorAll("[data-save]").length,filled=[...document.querySelectorAll("[data-save]")].filter(e=>e.value.trim()).length;document.getElementById("completion").textContent=Math.round(filled/Math.max(total,1)*100)+"%";document.getElementById("allergyCount").textContent=(data.allergiesList||[]).length;document.getElementById("medCount").textContent=(data.medicationsList||[]).length;document.getElementById("contactCount").textContent=(data.contactsList||[]).length;}
+function exportJSON(){let blob=new Blob([JSON.stringify(collect(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="medical-passport.json";a.click();URL.revokeObjectURL(a.href);}
+document.getElementById("importFile").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{fill(JSON.parse(r.result));saveAll()}catch(err){alert("Invalid JSON")}};r.readAsText(f)};
+function clearAll(){if(confirm("確定要清除所有資料嗎？")){localStorage.removeItem(KEY);location.reload()}}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.panel).classList.add("active")});
+document.addEventListener("input",updateStats);
+lang=localStorage.getItem(KEY+"_lang")||"zh-TW";document.getElementById("language").value=lang;applyLang();
+try{let saved=JSON.parse(localStorage.getItem(KEY)||"null");if(saved)fill(saved)}catch(e){}
+updateStats();
+</script>
+</body>
+</html>
